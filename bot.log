@@ -1,0 +1,100 @@
+2026-09-27 22:27:01,231 - bot.config - INFO - ============================================================
+2026-09-27 22:27:01,231 - bot.config - INFO - 🤖 BOT KONFIGURATSIYASI
+2026-09-27 22:27:01,231 - bot.config - INFO - ============================================================
+2026-09-27 22:27:01,231 - bot.config - INFO -   • Bot token: ✅
+2026-09-27 22:27:01,231 - bot.config - INFO -   • Owner ID: 6646928202
+2026-09-27 22:27:01,232 - bot.config - INFO -   • Admin IDs: [6684122507]
+2026-09-27 22:27:01,232 - bot.config - INFO -   • Database: sqlite+aiosqlite:///./database.sqlite3
+2026-09-27 22:27:01,232 - bot.config - INFO -   • Redis: ❌
+2026-09-27 22:27:01,232 - bot.config - INFO -   • Webhook: ❌
+2026-09-27 22:27:01,232 - bot.config - INFO -   • Fly.io: ❌
+2026-09-27 22:27:01,232 - bot.config - INFO -   • Cache: ❌
+2026-09-27 22:27:01,232 - bot.config - INFO -   • Maintenance: ❌
+2026-09-27 22:27:01,232 - bot.config - INFO - ============================================================
+2026-09-27 22:27:01,232 - bot.config - INFO - 💳 TO'LOV TIZIMLARI
+2026-09-27 22:27:01,232 - bot.config - INFO - ============================================================
+2026-09-27 22:27:01,232 - bot.config - INFO -   • Click.uz: ❌
+2026-09-27 22:27:01,233 - bot.config - INFO -   • Payme: ❌
+2026-09-27 22:27:01,233 - bot.config - INFO - ============================================================
+2026-09-27 22:27:01,233 - bot.config - INFO - 📱 SMS PROVIDERLAR
+2026-09-27 22:27:01,233 - bot.config - INFO - ============================================================
+2026-09-27 22:27:01,233 - bot.config - INFO -   • Eskiz.uz: ❌
+2026-09-27 22:27:01,233 - bot.config - INFO -   • PlayMobile: ❌
+2026-09-27 22:27:01,233 - bot.config - INFO - ============================================================
+2026-09-27 22:27:03,192 - bot.services.sms - WARNING - ⚠️ Hech qanday SMS provider yoqilmagan!
+2026-09-27 22:31:01,772 - bot.config - INFO - ============================================================
+2026-09-27 22:31:01,773 - bot.config - INFO - 🤖 BOT KONFIGURATSIYASI
+2026-09-27 22:31:01,776 - bot.config - INFO - ============================================================
+2026-09-27 22:31:01,778 - bot.config - INFO -   • Bot token: ✅
+2026-09-27 22:31:01,778 - bot.config - INFO -   • Owner ID: 6646928202
+2026-09-27 22:31:01,779 - bot.config - INFO -   • Admin IDs: [6684122507]
+2026-09-27 22:31:01,779 - bot.config - INFO -   • Database: sqlite+aiosqlite:///./database.sqlite3
+2026-09-27 22:31:01,780 - bot.config - INFO -   • Redis: ❌
+2026-09-27 22:31:01,780 - bot.config - INFO -   • Webhook: ❌
+2026-09-27 22:31:01,780 - bot.config - INFO -   • Fly.io: ❌
+2026-09-27 22:31:01,781 - bot.config - INFO -   • Cache: ❌
+2026-09-27 22:31:01,781 - bot.config - INFO -   • Maintenance: ❌
+2026-09-27 22:31:01,782 - bot.config - INFO - ============================================================
+2026-09-27 22:31:01,782 - bot.config - INFO - 💳 TO'LOV TIZIMLARI
+2026-09-27 22:31:01,783 - bot.config - INFO - ============================================================
+2026-09-27 22:31:01,783 - bot.config - INFO -   • Click.uz: ❌
+2026-09-27 22:31:01,784 - bot.config - INFO -   • Payme: ❌
+2026-09-27 22:31:01,784 - bot.config - INFO - ============================================================
+2026-09-27 22:31:01,785 - bot.config - INFO - 📱 SMS PROVIDERLAR
+2026-09-27 22:31:01,786 - bot.config - INFO - ============================================================
+2026-09-27 22:31:01,786 - bot.config - INFO -   • Eskiz.uz: ❌
+2026-09-27 22:31:01,787 - bot.config - INFO -   • PlayMobile: ❌
+2026-09-27 22:31:01,787 - bot.config - INFO - ============================================================
+2026-09-27 22:31:03,585 - bot.services.sms - WARNING - ⚠️ Hech qanday SMS provider yoqilmagan!
+2026-09-27 22:31:03,773 - main - INFO - 🤖 Bot sozlanmoqda...
+2026-09-27 22:31:03,865 - main - INFO - ✅ Bot sozlandi
+2026-09-27 22:31:03,868 - main - INFO - ⚙️ Middlewarelar sozlanmoqda...
+2026-09-27 22:31:03,871 - main - INFO - ✅ Middlewarelar ulandi
+2026-09-27 22:31:03,871 - main - INFO - 📡 Handlerlar sozlanmoqda...
+2026-09-27 22:31:03,871 - main - INFO - ✅ 8 ta handler ulandi
+2026-09-27 22:33:34,949 - bot.config - INFO - ============================================================
+2026-09-27 22:33:34,950 - bot.config - INFO - 🤖 BOT KONFIGURATSIYASI
+2026-09-27 22:33:34,951 - bot.config - INFO - ============================================================
+2026-09-27 22:33:34,951 - bot.config - INFO -   • Bot token: ✅
+2026-09-27 22:33:34,952 - bot.config - INFO -   • Owner ID: 6646928202
+2026-09-27 22:33:34,953 - bot.config - INFO -   • Admin IDs: [6684122507]
+2026-09-27 22:33:34,953 - bot.config - INFO -   • Database: sqlite+aiosqlite:///./database.sqlite3
+2026-09-27 22:33:34,953 - bot.config - INFO -   • Redis: ❌
+2026-09-27 22:33:34,954 - bot.config - INFO -   • Webhook: ❌
+2026-09-27 22:33:34,954 - bot.config - INFO -   • Fly.io: ❌
+2026-09-27 22:33:34,954 - bot.config - INFO -   • Cache: ❌
+2026-09-27 22:33:34,954 - bot.config - INFO -   • Maintenance: ❌
+2026-09-27 22:33:34,956 - bot.config - INFO - ============================================================
+2026-09-27 22:33:34,958 - bot.config - INFO - 💳 TO'LOV TIZIMLARI
+2026-09-27 22:33:34,958 - bot.config - INFO - ============================================================
+2026-09-27 22:33:34,958 - bot.config - INFO -   • Click.uz: ❌
+2026-09-27 22:33:34,958 - bot.config - INFO -   • Payme: ❌
+2026-09-27 22:33:34,959 - bot.config - INFO - ============================================================
+2026-09-27 22:33:34,959 - bot.config - INFO - 📱 SMS PROVIDERLAR
+2026-09-27 22:33:34,959 - bot.config - INFO - ============================================================
+2026-09-27 22:33:34,960 - bot.config - INFO -   • Eskiz.uz: ❌
+2026-09-27 22:33:34,960 - bot.config - INFO -   • PlayMobile: ❌
+2026-09-27 22:33:34,960 - bot.config - INFO - ============================================================
+2026-09-27 22:36:16,346 - bot.config - INFO - ============================================================
+2026-09-27 22:36:16,346 - bot.config - INFO - 🤖 BOT KONFIGURATSIYASI
+2026-09-27 22:36:16,347 - bot.config - INFO - ============================================================
+2026-09-27 22:36:16,347 - bot.config - INFO -   • Bot token: ✅
+2026-09-27 22:36:16,347 - bot.config - INFO -   • Owner ID: 6646928202
+2026-09-27 22:36:16,347 - bot.config - INFO -   • Admin IDs: [6684122507]
+2026-09-27 22:36:16,347 - bot.config - INFO -   • Database: sqlite+aiosqlite:///./database.sqlite3
+2026-09-27 22:36:16,347 - bot.config - INFO -   • Redis: ❌
+2026-09-27 22:36:16,348 - bot.config - INFO -   • Webhook: ❌
+2026-09-27 22:36:16,348 - bot.config - INFO -   • Fly.io: ❌
+2026-09-27 22:36:16,348 - bot.config - INFO -   • Cache: ❌
+2026-09-27 22:36:16,348 - bot.config - INFO -   • Maintenance: ❌
+2026-09-27 22:36:16,348 - bot.config - INFO - ============================================================
+2026-09-27 22:36:16,348 - bot.config - INFO - 💳 TO'LOV TIZIMLARI
+2026-09-27 22:36:16,348 - bot.config - INFO - ============================================================
+2026-09-27 22:36:16,349 - bot.config - INFO -   • Click.uz: ❌
+2026-09-27 22:36:16,349 - bot.config - INFO -   • Payme: ❌
+2026-09-27 22:36:16,349 - bot.config - INFO - ============================================================
+2026-09-27 22:36:16,349 - bot.config - INFO - 📱 SMS PROVIDERLAR
+2026-09-27 22:36:16,349 - bot.config - INFO - ============================================================
+2026-09-27 22:36:16,349 - bot.config - INFO -   • Eskiz.uz: ❌
+2026-09-27 22:36:16,349 - bot.config - INFO -   • PlayMobile: ❌
+2026-09-27 22:36:16,349 - bot.config - INFO - ============================================================

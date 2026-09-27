@@ -1,0 +1,74 @@
+# ==================== ASOSIY KUTUBXONALAR ====================
+aiogram
+aiohttp
+aiofiles
+
+# ==================== DATABASE ====================
+sqlalchemy
+aiosqlite
+alembic
+asyncpg
+redis
+aioredis
+
+# ==================== TO'LOV TIZIMLARI ====================
+aiohttp-socks
+cryptography
+
+# ==================== SMS PROVIDERLAR ====================
+aiosmtplib
+phonenumbers
+
+# ==================== UTILITY ====================
+python-dotenv
+greenlet
+async-timeout
+pydantic
+pydantic-settings
+
+# ==================== DATA VA ANALITIKA ====================
+pandas
+numpy
+matplotlib
+seaborn
+openpyxl
+python-dateutil
+
+# ==================== VALIDATSIYA ====================
+email-validator
+validators
+
+# ==================== RASM VA MEDIA ====================
+Pillow
+qrcode[pil]
+
+# ==================== AI/ML (OPTIONAL) ====================
+openai
+anthropic
+
+# ==================== MONITORING ====================
+psutil
+sentry-sdk
+
+# ==================== SECURITY ====================
+PyJWT
+bcrypt
+pyotp
+
+# ==================== CACHING ====================
+aiocache
+
+# ==================== LOGGING ====================
+loguru
+colorlog
+
+# ==================== TESTING ====================
+pytest
+pytest-asyncio
+pytest-cov
+
+# ==================== DOCUMENTATION ====================
+python-markdown
+
+# ==================== EKSPORT ====================
+reportlab
