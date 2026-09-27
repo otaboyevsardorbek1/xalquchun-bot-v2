@@ -1,0 +1,16 @@
+[Unit]
+Description=XalqUchun Telegram Bot
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/kali/Desktop/xalquchun-improved
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/home/kali/Desktop/xalquchun-improved/venv/bin/python /home/kali/Desktop/xalquchun-improved/main.py
+Restart=on-failure
+RestartSec=5
+User=kali
+Group=kali
+
+[Install]
+WantedBy=multi-user.target
