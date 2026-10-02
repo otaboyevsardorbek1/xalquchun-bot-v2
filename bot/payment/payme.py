@@ -11,6 +11,7 @@ from typing import Optional, Dict, Any
 from datetime import datetime
 import aiohttp
 from bot.config import payment_settings
+from bot.payment.base import BasePaymentAdapter
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +48,7 @@ class PaymeError(Exception):
         }
 
 
-class PaymePayment:
+class PaymePayment(BasePaymentAdapter):
     """Payme to'lov tizimi"""
     
     # Transaction states
@@ -265,6 +266,14 @@ class PaymePayment:
             logger.error(f"Payme CreateTransaction xatosi: {e}")
             raise PaymeError(-31099, str(e))
     
+    async def verify_payment(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Adapter-level payment verification wrapper for Payme callbacks."""
+        return await self.check_perform_transaction(data)
+
+    async def complete_payment(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Adapter-level payment completion wrapper for Payme callbacks."""
+        return await self.perform_transaction(data)
+
     async def perform_transaction(self, params: Dict[str, Any]) -> Dict[str, Any]:
         """
         PerformTransaction - tranzaksiyani amalga oshirish

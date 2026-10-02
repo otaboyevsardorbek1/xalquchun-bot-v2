@@ -13,6 +13,8 @@ from bot.states.checkout import Checkout
 from bot.utils.cart import get_cart_manager, clear_cart
 from bot.utils.chat_action import with_typing_action, send_find_location_action, send_typing_action
 from bot.utils.helpers import format_price, format_phone_for_display, generate_order_number
+from bot.utils.validators import validate_user_checkout_state, validate_order_payload
+from bot.services.audit import AuditLogService
 from bot.data import ADMIN_IDS
 import logging
 
@@ -44,13 +46,45 @@ async def start_checkout(event: Union[types.Message, CallbackQuery], state: FSMC
                 await event.answer(text, parse_mode="Markdown", reply_markup=kb)
             return
         
-        # Avval foydalanuvchi telefon raqamini tekshirish
         async with get_session() as session:
             result = await session.execute(
                 select(User).where(User.telegram_id == user_id)
             )
             user = result.scalar_one_or_none()
-            
+
+            guard = validate_user_checkout_state(user)
+            if not guard["allowed"]:
+                missing = guard["missing"]
+                profile_missing = []
+                if "registration" in missing:
+                    profile_missing.append("ro'yxatdan o'tish")
+                if "full_name" in missing:
+                    profile_missing.append("ism")
+                if "phone_number" in missing or "phone_verification" in missing:
+                    profile_missing.append("telefon raqami va tasdiqlash")
+                if "blocked" in missing:
+                    profile_missing.append("foydalanuvchi bloklangan")
+
+                missing_text = ", ".join(profile_missing) if profile_missing else "profil ma'lumotlari"
+                text = (
+                    "❌ *Buyurtma berish uchun profil ma'lumotlarini to'ldiring.*\n\n"
+                    f"Kerakli bo'limlar: {missing_text}.\n\n"
+                    "📌 /profile orqali ma'lumotlaringizni to'ldiring va telefon raqamingizni tasdiqlang."
+                )
+
+                kb = InlineKeyboardMarkup(inline_keyboard=[
+                    [InlineKeyboardButton(text="👤 Profilga o'tish", callback_data="view_profile")],
+                    [InlineKeyboardButton(text="🏠 Asosiy menyu", callback_data="back_to_main")],
+                ])
+
+                await state.clear()
+                if isinstance(event, CallbackQuery):
+                    await event.message.answer(text, parse_mode="Markdown", reply_markup=kb)
+                    await event.answer()
+                else:
+                    await event.answer(text, parse_mode="Markdown", reply_markup=kb)
+                return
+
             if user and user.phone_number:
                 # Telefon raqam bor, to'g'ridan-to'g'ri lokatsiya so'rash
                 await state.update_data(
@@ -298,6 +332,19 @@ async def confirm_order(callback: CallbackQuery, state: FSMContext):
         location = data['location']
         location_coords = data.get('location_coords', '')
         user_id = callback.from_user.id
+
+        order_guard = validate_order_payload({
+            "cart": cart,
+            "phone": phone,
+            "location": location,
+            "total_amount": sum(
+                (item.get('qty', 0) * item.get('price', 0)) if isinstance(item, dict) and item.get('price') is not None else 0
+                for item in cart.values()
+            ),
+        })
+        if not order_guard["allowed"]:
+            await callback.answer("❌ Buyurtma ma'lumotlari to'liq emas.", show_alert=True)
+            return
         
         # Buyurtma raqamini yaratish
         order_number = generate_order_number()
@@ -365,6 +412,22 @@ async def confirm_order(callback: CallbackQuery, state: FSMContext):
                         is_custom=True
                     )
                 session.add(order_item)
+
+            AuditLogService.record_event(
+                session,
+                event_type="order_created",
+                entity_type="order",
+                entity_id=order.id,
+                user_telegram_id=user_id,
+                admin_telegram_id=None,
+                action="created",
+                details={
+                    "order_number": order_number,
+                    "total_amount": total_amount,
+                    "phone": phone,
+                    "location": location,
+                },
+            )
             
             await session.commit()
         

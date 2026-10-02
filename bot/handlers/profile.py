@@ -10,6 +10,8 @@ from aiogram.types import Message, CallbackQuery
 from typing import Union
 from bot.db.database import get_session
 from bot.db.models import User, Transaction
+from bot.services.audit import AuditLogService
+from bot.services.kyc import KYCService, KYCSubmission
 from bot.utils.referral import get_user_by_tid
 from bot.utils.helpers import validate_uz_phone, format_phone_for_display, format_price
 from bot.data import ADMIN_IDS
@@ -20,6 +22,10 @@ logger = logging.getLogger(__name__)
 
 class ProfileState(StatesGroup):
     waiting_for_new_phone = State()
+
+
+class KYCProfileState(StatesGroup):
+    waiting_for_kyc = State()
 
 @router.message(Command("profile"))
 @router.callback_query(F.data == "view_profile")
@@ -59,6 +65,9 @@ async def cmd_profile(event:Union[ Message ,CallbackQuery]):
             'worker': '⚙️', 'diller': '💎', 'dastafka': '🔧', 'guest': '👤'
         }.get(user.role, '👤')
         
+        kyc_status = "✅ Tasdiqlangan" if user.is_kyc_verified else "⏳ Tasdiqlanish kutilmoqda"
+        kyc_details = "" if user.is_kyc_verified else "\n🔐 *KYC:* ma'lumotlarni to'ldiring va tasdiqlash uchun yuboring."
+
         text = f"""
 {role_emoji} *SHAXSIY PROFIL* {role_emoji}
 {'-' * 30}
@@ -67,17 +76,21 @@ async def cmd_profile(event:Union[ Message ,CallbackQuery]):
 📝 *Ism:* {user.full_name or '—'}
 👤 *Username:* @{user.username or '—'}
 📞 *Telefon:* {phone_display}
+📍 *Manzil:* {user.address or '—'}
+🪪 *Passport:* {user.passport_number or '—'}
 🎭 *Rol:* {user.role}
 💰 *Balans:* {balance_str} so'm
 👥 *Takliflar:* {user.referrals_count} ta
 📊 *Tranzaksiyalar:* {transactions_count} ta
 🔒 *Bloklangan:* {'✅' if not user.blocked else '❌'}
+🆔 *KYC holati:* {kyc_status}{kyc_details}
 📅 *Ro'yxatdan o'tgan:* {user.created_at.strftime('%d.%m.%Y')}
         """
         
         # Tugmalar
         kb = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="📞 Telefonni yangilash", callback_data="update_phone")],
+            [InlineKeyboardButton(text="🆔 KYC ni yakunlash", callback_data="start_kyc")],
             [InlineKeyboardButton(text="💰 Balans", callback_data="view_balance")],
             [InlineKeyboardButton(text="📜 Tranzaksiyalar", callback_data="view_transactions")],
             [InlineKeyboardButton(text="👥 Referallar", callback_data="view_referrals")],
@@ -98,6 +111,85 @@ async def cmd_profile(event:Union[ Message ,CallbackQuery]):
         else:
             await event.message.answer(error_msg)
             await event.answer()
+
+@router.callback_query(F.data == "start_kyc")
+async def start_kyc(callback: types.CallbackQuery, state: FSMContext):
+    """Start the real customer KYC submission flow."""
+    try:
+        await callback.message.answer(
+            "🆔 *KYC ma'lumotlarini kiriting*\n\n"
+            "Quyidagi formatda yozing:\n"
+            "`Ism Familiya\nTelefon\nManzil\nPassport raqami\nID / pasport ma'lumotlari`\n\n"
+            "Masalan:\n"
+            "`Ali Valiev\n+998901234567\nToshkent, Yunusobod 15-uy\nAB1234567\nID seriyasi va ma'lumotlar`",
+            parse_mode="Markdown",
+        )
+        await state.set_state(KYCProfileState.waiting_for_kyc)
+        await callback.answer()
+    except Exception as e:
+        logger.error(f"KYC boshlashda xato: {e}")
+        await callback.answer("❌ Xatolik yuz berdi", show_alert=True)
+
+
+@router.message(KYCProfileState.waiting_for_kyc)
+async def submit_kyc(message: types.Message, state: FSMContext):
+    """Validate and save KYC data before checkout is allowed."""
+    try:
+        lines = [line.strip() for line in message.text.splitlines() if line.strip()]
+        if len(lines) < 5:
+            await message.answer("❌ KYC ma'lumotlari yetarli emas. Qayta kiriting.")
+            return
+
+        submission = KYCSubmission(
+            full_name=lines[0],
+            phone_number=lines[1],
+            address=" ".join(lines[2:-2]) if len(lines) > 5 else lines[2],
+            passport_number=lines[-2],
+            id_document_data=lines[-1],
+        )
+
+        validation = KYCService.validate_submission(submission)
+        if not validation["allowed"]:
+            await message.answer(
+                "❌ KYC ma'lumotlari to'liq emas. Kerakli maydonlar: "
+                + ", ".join(validation["errors"]),
+            )
+            return
+
+        async with get_session() as session:
+            user = await get_user_by_tid(session, message.from_user.id)
+            if user:
+                user.full_name = submission.full_name
+                user.phone_number = submission.phone_number
+                user.address = submission.address
+                user.passport_number = submission.passport_number
+                user.id_document_data = submission.id_document_data
+                user.is_kyc_verified = True
+                user.kyc_status = "verified"
+                user.kyc_verified_at = __import__("datetime").datetime.utcnow()
+                await session.commit()
+
+                AuditLogService.record_event(
+                    session,
+                    event_type="kyc_verified",
+                    entity_type="user",
+                    entity_id=user.telegram_id,
+                    user_telegram_id=user.telegram_id,
+                    admin_telegram_id=None,
+                    action="approved",
+                    details={"status": "verified"},
+                )
+
+        await message.answer(
+            "✅ KYC ma'lumotlari qabul qilindi va tasdiqlandi.\n\nEndi buyurtma berish mumkin.",
+            reply_markup=types.ReplyKeyboardRemove(),
+        )
+        await state.clear()
+    except Exception as e:
+        logger.error(f"KYC yuborishda xato: {e}")
+        await message.answer("❌ Xatolik yuz berdi. Iltimos, qayta urinib ko'ring.")
+        await state.clear()
+
 
 @router.callback_query(F.data == "update_phone")
 async def update_phone_start(callback: types.CallbackQuery, state: FSMContext):

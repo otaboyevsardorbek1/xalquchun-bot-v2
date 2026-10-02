@@ -12,7 +12,13 @@ class User(Base):
     full_name = Column(String(255))
     username = Column(String(100), nullable=True)
     phone_number = Column(String(20), nullable=True)
+    address = Column(Text, nullable=True)
+    passport_number = Column(String(50), nullable=True)
+    id_document_data = Column(Text, nullable=True)
     is_phone_verified = Column(Boolean, default=False)
+    is_kyc_verified = Column(Boolean, default=False)
+    kyc_status = Column(String(30), default="not_started")
+    kyc_verified_at = Column(DateTime, nullable=True)
     role = Column(String(50), default="guest")  # owner, admin, manager, worker, diller, dastafka, guest
     balance = Column(Float, default=0.0)
     referrals_count = Column(Integer, default=0)
@@ -60,6 +66,7 @@ class Order(Base):
     order_number = Column(String(50), unique=True, nullable=False)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     phone = Column(String(20), nullable=False)
+    delivery_address = Column(Text, nullable=True)
     location_link = Column(Text, nullable=False)
     location_coords = Column(String(100), nullable=True)
     total_amount = Column(Float, default=0.0)
@@ -114,6 +121,20 @@ class Message(Base):
     
     sender = relationship("User", foreign_keys=[sender_telegram_id], back_populates="sent_messages")
     receiver = relationship("User", foreign_keys=[receiver_telegram_id], back_populates="received_messages")
+
+class AuditLog(Base):
+    __tablename__ = "audit_logs"
+
+    id = Column(Integer, primary_key=True)
+    event_type = Column(String(80), nullable=False, index=True)
+    entity_type = Column(String(80), nullable=False, index=True)
+    entity_id = Column(String(100), nullable=True, index=True)
+    user_telegram_id = Column(BigInteger, nullable=True, index=True)
+    admin_telegram_id = Column(BigInteger, nullable=True, index=True)
+    action = Column(String(80), nullable=False)
+    details = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
 
 class Transaction(Base):
     __tablename__ = "transactions"

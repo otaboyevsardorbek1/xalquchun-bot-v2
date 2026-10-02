@@ -10,6 +10,71 @@ from datetime import datetime
 logger = logging.getLogger(__name__)
 
 
+def validate_user_checkout_state(user) -> dict:
+    """Ensure the customer is fully registered, verified, and KYC-compliant before an order is accepted."""
+    if user is None:
+        return {"allowed": False, "missing": ["registration"], "reason": "user_not_found"}
+
+    missing = []
+    blocked = bool(getattr(user, "blocked", False))
+
+    if blocked:
+        return {"allowed": False, "missing": ["blocked"], "reason": "user_blocked"}
+
+    role = str(getattr(user, "role", "guest") or "guest").lower()
+    if role == "guest":
+        missing.append("registration")
+
+    if not getattr(user, "full_name", None) or not str(user.full_name).strip():
+        missing.append("full_name")
+
+    if not getattr(user, "phone_number", None):
+        missing.append("phone_number")
+
+    if not getattr(user, "is_phone_verified", False):
+        missing.append("phone_verification")
+
+    if not getattr(user, "is_kyc_verified", False):
+        missing.append("kyc_verification")
+
+    if not getattr(user, "passport_number", None) or not str(user.passport_number).strip():
+        missing.append("passport_number")
+
+    if not getattr(user, "address", None) or not str(user.address).strip():
+        missing.append("delivery_address")
+
+    return {
+        "allowed": not missing,
+        "missing": list(dict.fromkeys(missing)),
+        "reason": "registration_required" if missing else "ok",
+    }
+
+
+def validate_order_payload(order_data: dict) -> dict:
+    """Verify required cart, contact, and delivery data before order acceptance."""
+    errors = []
+    cart = order_data.get("cart") or {}
+    phone = order_data.get("phone")
+    delivery_address = order_data.get("delivery_address") or order_data.get("location")
+    total_amount = float(order_data.get("total_amount", 0) or 0)
+
+    if not cart or not any((v.get("qty", 0) or 0) > 0 for v in cart.values() if isinstance(v, dict)):
+        errors.append("cart_empty")
+
+    if phone is None or not str(phone).strip():
+        errors.append("phone_missing")
+    elif not validate_phone_number(str(phone))[0]:
+        errors.append("phone_invalid")
+
+    if not delivery_address or not str(delivery_address).strip():
+        errors.append("delivery_address_missing")
+
+    if total_amount <= 0:
+        errors.append("amount_invalid")
+
+    return {"allowed": not errors, "errors": list(dict.fromkeys(errors))}
+
+
 def validate_phone_number(phone: str) -> Tuple[bool, Optional[str]]:
     """
     O'zbek telefon raqamini tekshirish

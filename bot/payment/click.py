@@ -8,11 +8,12 @@ from typing import Optional, Dict, Any
 from datetime import datetime
 import aiohttp
 from bot.config import payment_settings
+from bot.payment.base import BasePaymentAdapter
 
 logger = logging.getLogger(__name__)
 
 
-class ClickPayment:
+class ClickPayment(BasePaymentAdapter):
     """Click.uz to'lov tizimi"""
     
     def __init__(self):

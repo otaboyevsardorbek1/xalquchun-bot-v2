@@ -65,3 +65,16 @@ If you are deploying behind Nginx or Caddy, expose the bot only on the webhook p
 ```text
 https://your-domain.example/webhook
 ```
+
+## AI agent guardrails and project rules
+
+This repository keeps a lean, production-oriented guardrail set for future coding agents:
+
+- [AGENTS.md](AGENTS.md) — core repo guidance, role model, and business rules.
+- [.github/copilot-instructions.md](.github/copilot-instructions.md) — default rules for all AI-assisted work.
+- [.github/instructions/commerce-ecosystem.md](.github/instructions/commerce-ecosystem.md) — consolidated architecture and marketplace rules from the TZ document.
+- [.github/prompts/commerce-guardrails.prompt.md](.github/prompts/commerce-guardrails.prompt.md) — reusable commerce-safety review prompt.
+- [.github/agents/commerce-guardrail-agent.md](.github/agents/commerce-guardrail-agent.md) — specialized guardrail agent.
+
+All AI-generated or AI-assisted changes must preserve the real-business rules of this system: guest users are blocked from ordering, users must register and complete verification before checkout, required personal data must be validated, and payment and fulfillment flows must follow real provider-style workflows instead of fake shortcuts.
+

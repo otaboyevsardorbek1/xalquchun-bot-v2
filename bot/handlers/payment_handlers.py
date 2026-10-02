@@ -6,13 +6,51 @@ import logging
 from aiogram import Router, types, F
 from aiogram.filters import Command
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from sqlalchemy import select
 
+from bot.db.database import get_session
+from bot.db.models import Order
 from bot.payment.click import click_payment
 from bot.payment.payme import payme_payment
 from bot.config import payment_settings
 
 router = Router()
 logger = logging.getLogger(__name__)
+
+
+def resolve_order_for_payment(order) -> dict:
+    """Return the real total amount attached to an order instead of a fake placeholder."""
+    if order is None:
+        return {"order_id": None, "order_number": None, "amount": 0.0, "status": None}
+
+    if hasattr(order, "total_amount"):
+        return {
+            "order_id": getattr(order, "id", None),
+            "order_number": getattr(order, "order_number", None),
+            "amount": float(getattr(order, "total_amount", 0) or 0),
+            "status": getattr(order, "status", None),
+        }
+
+    return {"order_id": order, "order_number": None, "amount": 0.0, "status": None}
+
+
+async def get_order_for_payment(order_ref: str):
+    """Load an actual order by numeric ID or order number from the database."""
+    try:
+        async with get_session() as session:
+            target_id = int(str(order_ref).strip())
+            result = await session.execute(select(Order).where(Order.id == target_id))
+            order = result.scalar_one_or_none()
+            if order is not None:
+                return order
+    except (ValueError, TypeError):
+        pass
+
+    async with get_session() as session:
+        result = await session.execute(
+            select(Order).where(Order.order_number == str(order_ref).strip())
+        )
+        return result.scalar_one_or_none()
 
 
 # ==================== PAYMENT METHODS ====================
@@ -80,20 +118,23 @@ async def show_payment_methods(message: types.Message, order_id: str, amount: fl
 async def process_click_payment(callback: types.CallbackQuery):
     """Click to'lovini boshlash"""
     try:
-        order_id = callback.data.split(":")[1]
-        
-        # Buyurtmani database'dan olish
-        # order = await get_order(order_id)
-        
-        # Misol uchun:
-        amount = 100000  # 100,000 so'm
-        
-        # Click to'lov havolasi yaratish
+        order_ref = callback.data.split(":")[1]
+        order = await get_order_for_payment(order_ref)
+        if not order:
+            await callback.answer("❌ Buyurtma topilmadi!", show_alert=True)
+            return
+
+        payment = resolve_order_for_payment(order)
+        amount = payment["amount"]
+        if amount <= 0:
+            await callback.answer("❌ Noto'g'ri buyurtma summasi!", show_alert=True)
+            return
+
         payment_url = click_payment.create_payment_url(
             amount=amount,
-            order_id=order_id,
-            return_url=f"https://t.me/YourBot?start=order_{order_id}",
-            description=f"Buyurtma #{order_id}"
+            order_id=str(payment["order_id"] or payment["order_number"] or order_ref),
+            return_url=f"https://t.me/YourBot?start=order_{order_ref}",
+            description=f"Buyurtma #{order_ref}"
         )
         
         text = (
@@ -172,20 +213,23 @@ async def check_click_payment(callback: types.CallbackQuery):
 async def process_payme_payment(callback: types.CallbackQuery):
     """Payme to'lovini boshlash"""
     try:
-        order_id = callback.data.split(":")[1]
-        
-        # Buyurtmani database'dan olish
-        # order = await get_order(order_id)
-        
-        # Misol uchun:
-        amount = 100000  # 100,000 so'm
-        
-        # Payme to'lov havolasi yaratish
+        order_ref = callback.data.split(":")[1]
+        order = await get_order_for_payment(order_ref)
+        if not order:
+            await callback.answer("❌ Buyurtma topilmadi!", show_alert=True)
+            return
+
+        payment = resolve_order_for_payment(order)
+        amount = payment["amount"]
+        if amount <= 0:
+            await callback.answer("❌ Noto'g'ri buyurtma summasi!", show_alert=True)
+            return
+
         payment_url = payme_payment.generate_pay_link(
             amount=amount,
-            order_id=order_id,
-            return_url=f"https://t.me/YourBot?start=order_{order_id}",
-            description=f"Buyurtma #{order_id}"
+            order_id=str(payment["order_id"] or payment["order_number"] or order_ref),
+            return_url=f"https://t.me/YourBot?start=order_{order_ref}",
+            description=f"Buyurtma #{order_ref}"
         )
         
         text = (

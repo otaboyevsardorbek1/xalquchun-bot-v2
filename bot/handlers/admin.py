@@ -21,7 +21,8 @@ from bot.keyboards.main import get_admin_menu, get_back_button
 from bot.utils.helpers import format_price, format_phone_for_display, create_progress_bar
 from bot.data import ADMIN_IDS, OWNER_ID, ALL_OWNER_IDS
 from bot.db.database import get_session
-from bot.db.models import Order, OrderItem, User, Transaction, Product, Category
+from bot.db.models import Order, OrderItem, User, Transaction, Product, Category, AuditLog
+from bot.services.audit import AuditLogService
 import logging
 
 MAINTENANCE_MODE = False  # Global flag - bu o'zgaruvchi admin_settings orqali o'zgartiriladi
@@ -41,6 +42,20 @@ def is_owner(user_id: int) -> bool:
 
 # ==================== ADMIN PANEL ASOSIY ====================
 
+def log_admin_action(session, admin_user_id: int, *, event_type: str, entity_type: str, entity_id, action: str, details=None):
+    """Persist admin activity for audit review."""
+    return AuditLogService.record_event(
+        session,
+        event_type=event_type,
+        entity_type=entity_type,
+        entity_id=entity_id,
+        user_telegram_id=admin_user_id,
+        admin_telegram_id=admin_user_id,
+        action=action,
+        details=details or {},
+    )
+
+
 @router.message(F.text == "👑 Admin panel")
 @router.message(Command("admin"))
 async def admin_panel(message: types.Message):
@@ -48,6 +63,17 @@ async def admin_panel(message: types.Message):
     if not is_admin(message.from_user.id):
         await message.answer("❌ Siz admin emassiz!")
         return
+
+    async with get_session() as session:
+        log_admin_action(
+            session,
+            message.from_user.id,
+            event_type="admin_access",
+            entity_type="admin_panel",
+            entity_id=message.from_user.id,
+            action="view",
+            details={"panel": "admin"},
+        )
     
     text = """
 👑 *ADMIN PANELI* 👑
@@ -69,6 +95,7 @@ Kerakli bo'limni tanlang:
         [InlineKeyboardButton(text="👥 Foydalanuvchilar", callback_data="admin_users")],
         [InlineKeyboardButton(text="💰 To'lovlar", callback_data="admin_payments")],
         [InlineKeyboardButton(text="📊 Statistika", callback_data="admin_stats")],
+        [InlineKeyboardButton(text="🧾 Audit log", callback_data="admin_audit_logs")],
         [InlineKeyboardButton(text="📢 Xabar yuborish", callback_data="admin_broadcast")],
         [InlineKeyboardButton(text="⚙️ Sozlamalar", callback_data="admin_settings")],
         [InlineKeyboardButton(text="🔙 Asosiy menyu", callback_data="back_to_main")]
@@ -77,6 +104,37 @@ Kerakli bo'limni tanlang:
     await message.answer(text, parse_mode="Markdown", reply_markup=kb)
 
 # ==================== BUYURTMALAR ====================
+
+@router.callback_query(F.data == "admin_audit_logs")
+async def admin_audit_logs(callback: CallbackQuery):
+    """Show recent system and admin activity for compliance review."""
+    if not is_admin(callback.from_user.id):
+        await callback.answer("❌ Ruxsat yo'q", show_alert=True)
+        return
+
+    async with get_session() as session:
+        result = await session.execute(
+            select(AuditLog).order_by(AuditLog.created_at.desc()).limit(10)
+        )
+        logs = result.scalars().all()
+
+    if not logs:
+        text = "🧾 *Audit log bo'sh.*"
+    else:
+        lines = ["🧾 *SO'NGGI AUDIT LOGLAR* 🧾\n"]
+        for entry in logs:
+            user_id = entry.user_telegram_id or "-"
+            admin_id = entry.admin_telegram_id or "-"
+            lines.append(
+                f"• {entry.created_at.strftime('%d.%m.%Y %H:%M')} | {entry.event_type} | "
+                f"{entry.entity_type}:{entry.entity_id} | user={user_id} | admin={admin_id} | {entry.action}"
+            )
+        text = "\n".join(lines)
+
+    kb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="🔙 Orqaga", callback_data="admin_back")]])
+    await callback.message.edit_text(text, parse_mode="Markdown", reply_markup=kb)
+    await callback.answer()
+
 
 @router.message(Command("orders"))
 @router.callback_query(F.data == "admin_orders")
