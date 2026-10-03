@@ -26,6 +26,19 @@ Main files:
 - Treat marketplace, delivery, and fulfillment flows as real business integrations with verification and audit trails.
 - Admin actions must remain auditable and must not bypass verification, order validation, or financial safety checks.
 
+## System analysis
+This repo is organized around a Telegram commerce workflow with strict gates before a real order can be created. The startup path in [main.py](../main.py) creates the bot, installs middleware (logging, error handling, rate limiting, maintenance, auth), registers the main routers, and initializes the database/cache and health endpoints.
+
+The practical flow is:
+1. user starts bot and browses catalog
+2. cart is built and validated
+3. checkout checks registration, phone number, KYC and blocked state
+4. location + delivery details are attached to the order
+5. payment resolution uses the real order amount
+6. admin operations remain auditable and tied to the underlying user/role
+
+The data model in [bot/db/models.py](../bot/db/models.py) is intentionally business-facing: `User` stores identity and KYC; `Order` and `OrderItem` store delivery/contact/total data; `Transaction` tracks payment/payout/bonus/refund events; `AuditLog` preserves traceable business evidence. Files such as [bot/handlers/checkout.py](../bot/handlers/checkout.py) and [tests/test_checkout_guardrails.py](../tests/test_checkout_guardrails.py) are the best examples of the expected guardrails.
+
 ## Commerce ecosystem rules
 - The platform follows the XalqUchun chain: Developer Partner → Dealer → Vendor → Customer → Courier.
 - Customer, courier, vendor, dealer, developer, admin, super admin, and support roles are distinct and must keep clear boundaries.

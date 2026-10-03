@@ -72,9 +72,22 @@ This repository keeps a lean, production-oriented guardrail set for future codin
 
 - [AGENTS.md](AGENTS.md) — core repo guidance, role model, and business rules.
 - [.github/copilot-instructions.md](.github/copilot-instructions.md) — default rules for all AI-assisted work.
-- [.github/instructions/commerce-ecosystem.md](.github/instructions/commerce-ecosystem.md) — consolidated architecture and marketplace rules from the TZ document.
+- [.github/instructions/commerce-ecosystem.md](.github/instructions/commerce-ecosystem.md) — consolidated architecture and marketplace rules from the TZ document, plus the single-source operating model for agents.
 - [.github/prompts/commerce-guardrails.prompt.md](.github/prompts/commerce-guardrails.prompt.md) — reusable commerce-safety review prompt.
 - [.github/agents/commerce-guardrail-agent.md](.github/agents/commerce-guardrail-agent.md) — specialized guardrail agent.
+- [.github/prompts/system-architecture-overview.prompt.md](.github/prompts/system-architecture-overview.prompt.md) — high-level architecture and business domain summary.
 
 All AI-generated or AI-assisted changes must preserve the real-business rules of this system: guest users are blocked from ordering, users must register and complete verification before checkout, required personal data must be validated, and payment and fulfillment flows must follow real provider-style workflows instead of fake shortcuts.
+
+## Full app context
+This project is a full marketplace ecosystem built around the XalqUchun chain: Developer Partner → Dealer → Vendor → Customer → Courier. The live business logic spans:
+
+- customer catalog, cart, checkout, wallet, orders, KYC, and support
+- vendor administration, product listings, order acceptance, payouts, and analytics
+- dealer network management, commissions, distributors, and partner onboarding
+- developer brand/product management with royalty tracking
+- courier delivery assignment, route handling, and earnings
+- admin moderation, approvals, financial controls, and audit logging
+
+The implementation is intentionally production-facing: real verification gates, role boundaries, and payment/delivery realism matter more than toy bot behavior. Detailed business architecture and rollout scope are captured in [tz_contend.md](tz_contend.md).
 

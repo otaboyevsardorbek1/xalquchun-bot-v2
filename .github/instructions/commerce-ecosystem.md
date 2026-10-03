@@ -7,6 +7,19 @@ Core chain:
 
 Developer Partner -> Dealer -> Vendor -> Customer -> Courier
 
+## AI agent operating model
+This file is the short, authoritative source of truth for AI-assisted work. Use it together with [AGENTS.md](../../AGENTS.md), [.github/copilot-instructions.md](../copilot-instructions.md), and the role-specific prompt files in [.github/prompts](../prompts) when the task is narrow, but treat this document as the production business summary for the repo.
+
+The system is a real marketplace and delivery platform, not a toy bot. Every task must preserve:
+- identity verification and KYC gates before purchase
+- no guest checkout or bypassed registration
+- explicit role boundaries across customer, courier, vendor, dealer, developer, support, admin, and super admin
+- real payment, payout, refund, and commission logic with auditability
+- delivery and fulfillment status integrity, not fake “success” states
+- environment-driven configuration and sensitive-data minimization
+
+When in doubt, read the actual business logic in [main.py](../../main.py), [bot/handlers/checkout.py](../../bot/handlers/checkout.py), [bot/handlers/profile.py](../../bot/handlers/profile.py), [bot/handlers/admin.py](../../bot/handlers/admin.py), [bot/db/models.py](../../bot/db/models.py), and the relevant prompt file before changing behavior.
+
 The platform is designed to support a marketplace that is not only a storefront, but also a logistics, fulfillment, payout, and verification network.
 
 ## Roles and responsibilities

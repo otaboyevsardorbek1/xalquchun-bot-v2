@@ -12,6 +12,41 @@ Key entry points and conventions:
 - Shared security and auth rules: [bot/middlewares](bot/middlewares)
 - Local docs: [README.md](README.md)
 
+## System analysis
+This project is a Telegram-first commerce stack rather than a simple chatbot. The runtime entry in [main.py](main.py) bootstraps the aiogram bot, installs middleware (logging, error handling, rate limiting, maintenance, auth), registers the major routers, initializes the database and optional cache, and exposes health endpoints for deployment.
+
+The normal user flow is:
+- start / catalog / cart / checkout
+- registration + KYC verification before live order creation
+- phone and location collection for delivery
+- order validation and payment resolution
+- admin auditing and fulfillment tracking
+
+The main domain objects live in [bot/db/models.py](bot/db/models.py): `User` holds identity, role, KYC, profile, and blocked state; `Order` and `OrderItem` capture cart totals, delivery data, and order status; `Transaction` records money movement; `AuditLog` stores admin and business-process evidence. The `checkout` handler is the critical guardrail layer: it checks cart content, user registration, phone verification, KYC completion, and blocked-user state before allowing a real purchase flow.
+
+Key project conventions for agents:
+- Prefer environment-driven config over hard-coded numbers or secrets.
+- Treat `checkout`, `payment`, and `admin` modules as business-critical, not toy workflows.
+- Validate user data at the boundary instead of trusting Telegram payloads.
+- Keep auditability and role checks intact for every financial action.
+- Use the smallest relevant test or validation target; the repo already includes checkout and KYC guardrail tests in [tests/test_checkout_guardrails.py](tests/test_checkout_guardrails.py).
+
+## Full app context
+The repository implements the XalqUchun marketplace model described in [tz_contend.md](tz_contend.md): a multi-role commerce and delivery ecosystem with a shared backend and Telegram-first UX. The business chain is:
+
+Developer Partner → Dealer → Vendor → Customer → Courier
+
+The app is intended to support:
+- Customer flow: catalog, cart, checkout, KYC, delivery, order tracking, wallet, referrals, and support.
+- Vendor flow: catalog management, inventory, order acceptance, payout requests, and analytics.
+- Dealer flow: vendor network management, product distribution, commission tracking, and partner coordination.
+- Developer Partner flow: product offering, brand management, royalty tracking, and merchant relationships.
+- Courier flow: assignment, route management, live location, delivery confirmation, and earnings.
+- Admin flow: user verification, moderation, payout approvals, financial controls, and audit logs.
+- Support flow: customer issues, order disputes, and escalation handling.
+
+The system design mixes a Telegram bot, web panels, async backend, real-time events, and external integrations (payments, SMS, WhatsApp, maps, storage). In practice, this means code changes must maintain identity verification, business role boundaries, auditability, and operational realism rather than “fast success” placeholders.
+
 ## Business architecture from TZ
 The platform is not a toy bot. It behaves like a full digital commerce ecosystem with these roles:
 
